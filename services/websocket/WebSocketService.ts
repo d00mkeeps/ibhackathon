@@ -35,9 +35,21 @@ export class WebSocketService {
   private wsUrl: string;
 
   constructor(baseUrl?: string) {
-    // Default to localhost for hackathon, but allow override
-    const defaultUrl = "ws://localhost:8000/ws/chat";
-    this.wsUrl = baseUrl || defaultUrl;
+    // Use Railway URL for production, localhost for development
+    const isDev =
+      typeof window !== "undefined" &&
+      window.location?.hostname === "localhost";
+
+    if (isDev) {
+      this.wsUrl = "ws://localhost:8000/ws/chat";
+    } else {
+      this.wsUrl = "wss://ibhackathon-production.up.railway.app/ws/chat";
+    }
+
+    // Allow override if baseUrl provided
+    if (baseUrl) {
+      this.wsUrl = baseUrl;
+    }
   }
 
   /**
@@ -46,10 +58,17 @@ export class WebSocketService {
   async connect(conversationId?: string): Promise<void> {
     console.log(`[WSService] Connecting to chat...`);
 
+    const isDev =
+      typeof window !== "undefined" &&
+      window.location?.hostname === "localhost";
+    const baseWsUrl = isDev
+      ? "ws://localhost:8000/ws/chat"
+      : "wss://ibhackathon-production.up.railway.app/ws/chat";
+
     if (conversationId) {
-      this.wsUrl = `ws://localhost:8000/ws/chat?conversation_id=${conversationId}`;
+      this.wsUrl = `${baseWsUrl}?conversation_id=${conversationId}`;
     } else {
-      this.wsUrl = "ws://localhost:8000/ws/chat";
+      this.wsUrl = baseWsUrl;
     }
 
     // Return existing connection promise if connecting
