@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic-settings
+websockets
+uvicorn[standard]
+python-dotenv
+pydantic
+langchain-core
+supabase
+pydantic[email]
+apscheduler
+langchain-google-vertexai
+google-cloud-aiplatform
+pandas
+scipy
