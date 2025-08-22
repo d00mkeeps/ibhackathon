@@ -10,20 +10,33 @@ let WS_BASE_URL: string | null = null;
  */
 export async function initializeApiClient(): Promise<void> {
   if (!API_BASE_URL) {
-    try {
-      const ipAddress = await getLocalIpAddress();
-      API_BASE_URL = `http://${ipAddress}:8000`;
-      WS_BASE_URL = `ws://${ipAddress}:8000/api/llm`;
-      console.log(`[apiClient] Initialized with base URL: ${API_BASE_URL}`);
-    } catch (error) {
-      console.error("[apiClient] Failed to initialize:", error);
-      throw new Error(
-        "Failed to initialize API client: Could not resolve IP address"
-      );
+    // Check if we're in development
+    const isDev =
+      __DEV__ ||
+      (typeof window !== "undefined" &&
+        window.location?.hostname === "localhost");
+
+    if (isDev) {
+      // Development - use local IP
+      try {
+        const ipAddress = await getLocalIpAddress();
+        API_BASE_URL = `http://${ipAddress}:8000`;
+        WS_BASE_URL = `ws://${ipAddress}:8000/api/llm`;
+      } catch (error) {
+        console.error("[apiClient] Failed to get local IP:", error);
+        // Fallback to Railway even in dev if local fails
+        API_BASE_URL = "https://ibhackathon-production.up.railway.app";
+        WS_BASE_URL = "wss://ibhackathon-production.up.railway.app/api/llm";
+      }
+    } else {
+      // Production - use Railway
+      API_BASE_URL = "https://ibhackathon-production.up.railway.app";
+      WS_BASE_URL = "wss://ibhackathon-production.up.railway.app/api/llm";
     }
+
+    console.log(`[apiClient] Initialized with base URL: ${API_BASE_URL}`);
   }
 }
-
 /**
  * Get the current base URL for API requests
  */

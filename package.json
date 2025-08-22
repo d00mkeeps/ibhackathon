@@ -65,6 +65,7 @@
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "^0.20.0",
     "react-native-wizard": "^2.1.1",
+    "serve": "^14.0.0",
     "tamagui": "^1.126.13",
     "uuid": "^11.0.3",
     "victory-native": "^37.1.2",
