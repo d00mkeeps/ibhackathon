@@ -1,8 +1,7 @@
 import { companyService } from "@/services/api/companyService";
-import { ConversationsSidebarRef } from "@/components/organisms/ConversationsSidebar";
 import { ConversationModal } from "@/components/organisms/ConversationModal"; // Add this import
 import React, { useState, useRef } from "react";
-import { Stack, Input, Button, Text } from "tamagui";
+import { Stack, Button, Text } from "tamagui";
 import CompanySearchInput from "@/components/molecules/CompanySearchInput";
 
 // Add interface for conversation type
@@ -15,7 +14,6 @@ interface Conversation {
 export default function HomeScreen() {
   const [companyName, setCompanyName] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const sidebarRef = useRef<ConversationsSidebarRef>(null);
 
   // Add modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,9 +40,6 @@ export default function HomeScreen() {
         // Open the conversation modal
         setSelectedConversation(conversation);
         setIsModalOpen(true);
-
-        // Refresh conversations sidebar after creating a new one
-        sidebarRef.current?.refreshConversations();
       } else {
         console.error("Failed to process company:", result.error);
       }
@@ -77,9 +72,6 @@ export default function HomeScreen() {
         // Open the conversation modal
         setSelectedConversation(conversation);
         setIsModalOpen(true);
-
-        // Refresh conversations sidebar
-        sidebarRef.current?.refreshConversations();
       } else {
         console.error("Failed to process company:", result.error);
       }
@@ -117,7 +109,7 @@ export default function HomeScreen() {
             CARP
           </Text>
           <Text fontSize="$6" fontWeight="bold" color="red">
-            (Comany analysis research partner)
+            (Company analysis research partner)
           </Text>
           <Text fontSize="$6" fontWeight="bold" color="$color">
             Please enter a company name
