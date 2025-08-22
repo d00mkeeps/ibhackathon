@@ -13,3 +13,4 @@ langchain-google-vertexai
 google-cloud-aiplatform
 pandas
 scipy
+langchain_community
