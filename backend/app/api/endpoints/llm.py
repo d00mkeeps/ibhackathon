@@ -4,6 +4,7 @@ import os
 from typing import Dict, Any
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, Depends, HTTPException
 from dotenv import load_dotenv
+from google.oauth2 import service_account
 from app.services.llm.investment_analysis_service import InvestmentAnalysisLLMService
 
 load_dotenv()
@@ -11,23 +12,30 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 def get_google_credentials():
-    """Verify Google Cloud credentials are properly set"""
-    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    """Initialize Google Cloud credentials directly from JSON"""
+    credentials_json = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
     project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
     
-    if not credentials_path:
-        logger.error("GOOGLE_APPLICATION_CREDENTIALS environment variable not set")
+    if not credentials_json:
+        logger.error("GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable not set")
         raise HTTPException(status_code=500, detail="Google Cloud credentials not configured")
     
     if not project_id:
         logger.error("GOOGLE_CLOUD_PROJECT environment variable not set")
         raise HTTPException(status_code=500, detail="Google Cloud project not configured")
     
-    return {"credentials_path": credentials_path, "project_id": project_id}
-
+    try:
+        credentials_info = json.loads(credentials_json)
+        credentials = service_account.Credentials.from_service_account_info(credentials_info)
+        return {"credentials": credentials, "project_id": project_id}
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Invalid Google Cloud credentials JSON")
 # Dependency to get CARA LLM service
-def get_cara_llm_service(credentials: dict = Depends(get_google_credentials)):
-    return InvestmentAnalysisLLMService()
+def get_cara_llm_service(creds: dict = Depends(get_google_credentials)):
+    return InvestmentAnalysisLLMService(
+        credentials=creds["credentials"], 
+        project_id=creds["project_id"]
+    )
 
 # Custom JSON encoder that handles datetime objects
 class DateTimeEncoder(json.JSONEncoder):

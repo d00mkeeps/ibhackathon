@@ -1,32 +1,36 @@
 import logging
-from fastapi import WebSocket
 import google.api_core.exceptions
 from langchain_google_vertexai import ChatVertexAI
 from app.services.chains.investment_analysis_chain import InvestmentAnalysisChain
-
+from google.oauth2.credentials import Credentials
 logger = logging.getLogger(__name__)
 
 class InvestmentAnalysisLLMService:
     """Service for CARA (Complex Analysis Research Assistant)"""
     
-    def __init__(self):
+    def __init__(self, credentials: Credentials = None, project_id: str = None):
         self._chain = None
+        self.credentials = credentials
+        self.project_id = project_id
         
     def get_chain(self) -> InvestmentAnalysisChain:
         """Get or create the analysis chain"""
         if self._chain is None:
-            # Initialize LLM (same as your working version)
+            # Initialize LLM with explicit credentials
             llm = ChatVertexAI(
                 model="gemini-2.5-pro",
                 streaming=True,
                 max_retries=0,
-                temperature=0
+                temperature=0,
+                credentials=self.credentials,  # Pass credentials explicitly
+                project=self.project_id       # Pass project ID explicitly
             )
                     
             # Create chain
             self._chain = InvestmentAnalysisChain(llm=llm)
             
         return self._chain
+
         
     async def process_websocket(self, websocket, conversation_id: str = None):
         """Process WebSocket with optional company context"""
